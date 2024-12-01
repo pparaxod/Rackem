@@ -161,38 +161,15 @@ function DeBloat {
         # | Pipe, takes the output of Get-AppxPackage *OneDrive* and uses it as the Input for Remove-AppXPackage
         # Remove-AppxPackage: Removes the app package for all user accounts on the computer
         Get-AppxPackage *OneDrive* | Remove-AppxPackage
+        Get-AppxPackage *Microsoft.XboxGamingOverlay* | Remove-AppxPackage -AllUsers
+        Get-AppxPackage *Microsoft.549981C3F5F10* | Remove-AppxPackage -AllUsers
+        Get-AppxPackage *ZuneMusic* | Remove-AppxPackage -AllUsers
+        Get-AppxPackage *WindowsCamera* | Remove-AppxPackage -AllUsers
     } catch {
         # $_ is a special variable that for this context within the catch clock will represent the current error object. 
         # That way, it will output what the error is. 
         Write-Host "Couldn't uninstall:$_"
         # The shell will stall for ten seconds, allowing the user to access the error. 
-        Start-Sleep -Seconds 10
-    }
-    try {
-        Get-AppxPackage *Microsoft.XboxGamingOverlay* | Remove-AppxPackage -AllUsers
-    } catch {
-    Write-Host "Couldn't eat: $_"
-    }
-    Start-Sleep -Seconds 1
-    try {
-        Get-AppxPackage *Microsoft.549981C3F5F10* | Remove-AppxPackage -AllUsers
-        Start-Sleep -Seconds 1
-    } catch {
-        Write-Host "Couldn't eat: $_"
-        Start-Sleep -Seconds 10
-    }
-    try {
-        Get-AppxPackage *ZuneMusic* | Remove-AppxPackage -AllUsers
-        Start-Sleep -Seconds 1
-    } catch {
-        Write-Host "Couldn't eat:$_"
-        Start-Sleep -Seconds 10
-    }
-    try {
-        Get-AppxPackage *WindowsCamera* | Remove-AppxPackage -AllUsers
-        Start-Sleep -Seconds 1
-    } catch {
-        Write-Host "Couldn't eat:$_"
         Start-Sleep -Seconds 10
     }
     Write-Output "Bloatware has been uninstalled or disabled."
@@ -203,12 +180,6 @@ function Repairs {
     sfc /scannow
     DISM /Online /Cleanup-Image /-RestoreHealth
     Repair-Volume -DriveLetter C -Scan
-    Repair-FileIntegrity -DriveLetter C
-    Repair-WindowsImage -Online -CheckHealth
-    if ($?){
-        Write-Host "Repairing Windows Image..."
-        Repair-WindowsImage -Online -RestoreHealth
-    }
     Write-Host "Repair operations completed." 
 }
 
@@ -256,9 +227,10 @@ function ThirdPtyTools {
         Write-Host "Installing winget..."
         Install-Script -Name winget-install -RequiredVersion 2.1.0 -Force
         Write-Host "winget installation complete."
-    }
+    } else {
     Write-Output "Installing Translucent TB..."
     winget install --id "Translucent.TB.TranslucentTB" 
+    }
 }
 
 
@@ -279,7 +251,8 @@ $Start.Add_Click({
     Write-Host "Running DefenderScan"; DefenderScan 
     Write-Host "Running DeBloat"; DeBloat 
     Write-Host "Running Repairs"; Repairs 
-    Write-Host "Running Optimize"; Optimize 
+    Write-Host "Running Optimize"; Optimize
+
      }
     if ($ThirdPtyToolsCheckbox.IsChecked) { Write-Host "Running ThirdPtyTools"; ThirdPtyTools }
     if ($CleanupCheckbox.IsChecked) { Write-Host "Running Cleanup"; Cleanup }
